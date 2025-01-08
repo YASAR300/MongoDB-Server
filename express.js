@@ -3,7 +3,9 @@ const { MongoClient } = require('mongodb');
 const cors = require('cors'); 
 
 const app = express();
-const port = 5000;
+
+
+const port = process.env.PORT || 5000;  
 
 // MongoDB connection details
 const uri = "mongodb://127.0.0.1:27017"; 
@@ -52,8 +54,6 @@ app.get('/students', async (req, res) => {
 // POST: Add a new student
 app.post('/students', async (req, res) => {
     try {
-        // console.log("Request Object", req);
-        // console.log("Request Body", req.body);
         const newStudent = req.body;
         const result = await students.insertOne(newStudent);
         res.status(201).send(`Student added with ID: ${result.insertedId}`);
@@ -65,8 +65,6 @@ app.post('/students', async (req, res) => {
 // PUT: Update a student completely
 app.put('/students/:rollNumber', async (req, res) => {
     try {
-        console.log("Request Params", req.params);
-        console.log("Request Body:", req.body);
         const rollNumber = parseInt(req.params.rollNumber);
         const updatedStudent = req.body;
         const result = await students.replaceOne({ rollNumber }, updatedStudent);
