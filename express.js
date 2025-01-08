@@ -1,18 +1,18 @@
 const express = require('express');
 const { MongoClient } = require('mongodb');
-const cors = require('cors'); 
+const cors = require('cors');
 
 const app = express();
 
-
+// Use the PORT from the environment variable or fallback to 5000 for local development
 const port = process.env.PORT || 5000;  
 
 // MongoDB connection details
-const uri = "mongodb://127.0.0.1:27017"; 
+const uri = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017"; 
 const dbName = "codinggita";
 
 // Middleware
-app.use(cors()); 
+app.use(cors());
 app.use(express.json());
 
 let db, students;
@@ -28,7 +28,7 @@ async function initializeDatabase() {
 
         // Start server after successful DB connection
         app.listen(port, () => {
-            console.log(`Server running at http://localhost:${port}`);
+            console.log(`Server running on port ${port}`);
         });
     } catch (err) {
         console.error("Error connecting to MongoDB:", err);
