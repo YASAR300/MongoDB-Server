@@ -4,11 +4,11 @@ const cors = require('cors');
 
 const app = express();
 
-// Use the PORT from the environment variable or fallback to 5000 for local development
+
 const port = process.env.PORT || 5000;  
 
 // MongoDB connection details
-const uri = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017"; 
+const uri = process.env.MONGODB_URI || "mongodb+srv://yasarkhancg:787898@cluster0.ftdfl.mongodb.net/"; 
 const dbName = "codinggita";
 
 // Middleware
