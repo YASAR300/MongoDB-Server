@@ -6,8 +6,7 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 // MongoDB connection details
-const uri = process.env.MONGODB_URI || "mongodb+srv://yasarkhancg:787898@cluster0.ftdfl.mongodb.net/"; 
-const dbName = "codinggita";
+const uri = process.env.MONGODB_URI || "mongodb+srv://yasarkhancg:787898@cluster0.ftdfl.mongodb.net/codinggita?retryWrites=true&w=majority"; 
 
 // Define the student schema
 const studentSchema = new mongoose.Schema({
@@ -28,6 +27,7 @@ app.use(express.json());
 // Connect to MongoDB and initialize collections
 async function initializeDatabase() {
     try {
+        console.log('Connecting to MongoDB...');
         await mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true });
         console.log("Connected to MongoDB");
 
