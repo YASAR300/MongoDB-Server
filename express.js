@@ -1,5 +1,5 @@
 const express = require('express');
-const { MongoClient } = require('mongodb');
+const mongoose = require('mongoose');
 const cors = require('cors');
 
 const app = express();
@@ -9,20 +9,27 @@ const port = process.env.PORT || 5000;
 const uri = process.env.MONGODB_URI || "mongodb+srv://yasarkhancg:787898@cluster0.ftdfl.mongodb.net/"; 
 const dbName = "codinggita";
 
+// Define the student schema
+const studentSchema = new mongoose.Schema({
+  name: String,
+  rollNumber: Number,
+  department: String,
+  year: Number,
+  coursesEnrolled: { type: [String], default: [] },  // Default to an empty array
+});
+
+// Create a model based on the schema
+const Student = mongoose.model('Student', studentSchema);
+
 // Middleware
 app.use(cors());
 app.use(express.json());
 
-let db, students;
-
 // Connect to MongoDB and initialize collections
 async function initializeDatabase() {
     try {
-        const client = await MongoClient.connect(uri, { useUnifiedTopology: true });
+        await mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true });
         console.log("Connected to MongoDB");
-
-        db = client.db(dbName);
-        students = db.collection("students");
 
         // Start server after successful DB connection
         app.listen(port, () => {
@@ -39,7 +46,7 @@ initializeDatabase();
 // GET: List all students
 app.get('/students', async (req, res) => {
     try {
-        const allStudents = await students.find().toArray();
+        const allStudents = await Student.find();
         res.status(200).json(allStudents);
     } catch (err) {
         res.status(500).send("Error fetching students: " + err.message);
@@ -49,9 +56,9 @@ app.get('/students', async (req, res) => {
 // POST: Add a new student and return updated list
 app.post('/students', async (req, res) => {
     try {
-        const newStudent = req.body;
-        await students.insertOne(newStudent);
-        const allStudents = await students.find().toArray();
+        const newStudent = new Student(req.body);
+        await newStudent.save();
+        const allStudents = await Student.find();
         res.status(201).json(allStudents); // Return updated data
     } catch (err) {
         res.status(500).send("Error adding student: " + err.message);
@@ -63,8 +70,8 @@ app.put('/students/:rollNumber', async (req, res) => {
     try {
         const rollNumber = parseInt(req.params.rollNumber);
         const updatedStudent = req.body;
-        await students.replaceOne({ rollNumber }, updatedStudent);
-        const allStudents = await students.find().toArray();
+        await Student.replaceOne({ rollNumber }, updatedStudent);
+        const allStudents = await Student.find();
         res.status(200).json(allStudents); // Return updated data
     } catch (err) {
         res.status(500).send("Error updating student: " + err.message);
@@ -76,8 +83,8 @@ app.patch('/students/:rollNumber', async (req, res) => {
     try {
         const rollNumber = parseInt(req.params.rollNumber);
         const updates = req.body;
-        await students.updateOne({ rollNumber }, { $set: updates });
-        const allStudents = await students.find().toArray();
+        await Student.updateOne({ rollNumber }, { $set: updates });
+        const allStudents = await Student.find();
         res.status(200).json(allStudents); // Return updated data
     } catch (err) {
         res.status(500).send("Error partially updating student: " + err.message);
@@ -88,8 +95,8 @@ app.patch('/students/:rollNumber', async (req, res) => {
 app.delete('/students/:rollNumber', async (req, res) => {
     try {
         const rollNumber = parseInt(req.params.rollNumber);
-        await students.deleteOne({ rollNumber });
-        const allStudents = await students.find().toArray();
+        await Student.deleteOne({ rollNumber });
+        const allStudents = await Student.find();
         res.status(200).json(allStudents); // Return updated data
     } catch (err) {
         res.status(500).send("Error deleting student: " + err.message);
