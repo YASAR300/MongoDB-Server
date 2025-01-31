@@ -1,9 +1,11 @@
 const express = require('express');
-const { MongoClient } = require('mongodb');
+const { MongoClient,ObjectId } = require('mongodb');
 const cors = require('cors');
 
 const app = express();
-const port = process.env.PORT || 5000;
+
+
+const port = process.env.PORT || 5000;  
 
 // MongoDB connection details
 const uri = process.env.MONGODB_URI || "mongodb+srv://yasarkhancg:787898@cluster0.ftdfl.mongodb.net/"; 
@@ -22,7 +24,7 @@ async function initializeDatabase() {
         console.log("Connected to MongoDB");
 
         db = client.db(dbName);
-        students = db.collection("students");
+        students = db.collection("courses");
 
         // Start server after successful DB connection
         app.listen(port, () => {
@@ -34,63 +36,62 @@ async function initializeDatabase() {
     }
 }
 
+// Initialize Database
 initializeDatabase();
 
+// Routes
+
 // GET: List all students
-app.get('/students', async (req, res) => {
+app.get('/courses', async (req, res) => {
     try {
-        const allStudents = await students.find().toArray();
+        const allStudents = await courses.find().toArray();
         res.status(200).json(allStudents);
     } catch (err) {
         res.status(500).send("Error fetching students: " + err.message);
     }
 });
 
-// POST: Add a new student and return updated list
-app.post('/students', async (req, res) => {
+// POST: Add a new student
+app.post('/courses', async (req, res) => {
     try {
         const newStudent = req.body;
-        await students.insertOne(newStudent);
-        const allStudents = await students.find().toArray();
-        res.status(201).json(allStudents); // Return updated data
+        const result = await courses.insertOne({ _id : new ObjectId(_id) },newStudent);
+        res.status(201).send(`Student added with ID: ${result.insertedId}`);
     } catch (err) {
         res.status(500).send("Error adding student: " + err.message);
     }
 });
 
 // PUT: Update a student completely
-app.put('/students/:rollNumber', async (req, res) => {
+app.put('/courses/:_id', async (req, res) => {
     try {
-        const rollNumber = parseInt(req.params.rollNumber);
+        const rollNumber = parseInt(req.params._id);
         const updatedStudent = req.body;
-        await students.replaceOne({ rollNumber }, updatedStudent);
-        const allStudents = await students.find().toArray();
-        res.status(200).json(allStudents); // Return updated data
+        const result = await courses.replaceOne({ _id : new ObjectId(_id) }, updatedStudent);
+        res.status(200).send(`${result.modifiedCount} document(s) updated`);
     } catch (err) {
         res.status(500).send("Error updating student: " + err.message);
     }
 });
 
 // PATCH: Partially update a student
-app.patch('/students/:rollNumber', async (req, res) => {
+app.patch('/courses/:_id', async (req, res) => {
     try {
-        const rollNumber = parseInt(req.params.rollNumber);
+        const rollNumber = parseInt(req.params._id);
         const updates = req.body;
-        await students.updateOne({ rollNumber }, { $set: updates });
-        const allStudents = await students.find().toArray();
-        res.status(200).json(allStudents); // Return updated data
+        const result = await courses.updateOne({ _id : new ObjectId(_id) }, { $set: updates });
+        res.status(200).send(`${result.modifiedCount} document(s) updated`);
     } catch (err) {
         res.status(500).send("Error partially updating student: " + err.message);
     }
 });
 
 // DELETE: Remove a student
-app.delete('/students/:rollNumber', async (req, res) => {
+app.delete('/courses/:_id', async (req, res) => {
     try {
-        const rollNumber = parseInt(req.params.rollNumber);
-        await students.deleteOne({ rollNumber });
-        const allStudents = await students.find().toArray();
-        res.status(200).json(allStudents); // Return updated data
+        const rollNumber = parseInt(req.params._id);
+        const result = await courses.deleteMany({ _id : new ObjectId(_id) });
+        res.status(200).send(`${result.deletedCount} document(s) deleted`);
     } catch (err) {
         res.status(500).send("Error deleting student: " + err.message);
     }
